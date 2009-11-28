@@ -34,6 +34,7 @@ package org.swiftsuspenders
 		private var m_constructorInjectionPoints : Dictionary;
 		private var m_attendedToInjectees : Dictionary;
 		private var m_xmlMetadata : XML;
+		protected var m_parent:Injector;
 		
 		/*******************************************************************************************
 		*								public methods											   *
@@ -108,7 +109,7 @@ package org.swiftsuspenders
 			}
 			else
 			{
-				ctor = target.constructor;
+				ctor = target.constructor as Class;
 			}
 			
 			injectionPoints = m_injectionPointLists[ctor] || getInjectionPoints(ctor);
@@ -290,6 +291,59 @@ package org.swiftsuspenders
 			var parentInjectionPoints : Array = m_injectionPointLists[parentClassName] || 
 					getInjectionPoints(Class(getDefinitionByName(parentClassName)));
 			injectionPoints.push.apply(injectionPoints, parentInjectionPoints);
+		}
+		
+		// New parent related stuff here
+		
+		/**
+		 * 
+		 */
+		public function mergeInjector(injector:Injector, overwrite:Boolean = true):void
+		{
+			mergeDictionary(m_mappings, injector.m_mappings, overwrite);
+			mergeDictionary(m_singletons, injector.m_singletons, overwrite);
+			mergeDictionary(m_injectionPointLists, injector.m_injectionPointLists, overwrite);
+			mergeDictionary(m_constructorInjectionPoints, injector.m_constructorInjectionPoints, overwrite);
+			mergeDictionary(m_attendedToInjectees, injector.m_attendedToInjectees, overwrite);
+		}
+		
+		public function unmergeInjector(injector:Injector):void
+		{
+			unmergeDictionary(m_mappings, injector.m_mappings);
+			unmergeDictionary(m_singletons, injector.m_singletons);
+			unmergeDictionary(m_injectionPointLists, injector.m_injectionPointLists);
+			unmergeDictionary(m_constructorInjectionPoints, injector.m_constructorInjectionPoints);
+			unmergeDictionary(m_attendedToInjectees, injector.m_attendedToInjectees);
+		}
+
+		/**
+		 * Utility method for merging dictionaries
+		 */
+		protected function mergeDictionary(source:Dictionary, add:Dictionary, overwrite:Boolean):void
+		{
+			for(var key: * in add)
+			{
+				trace("debug adding new key", key);
+				source[key] = overwrite && source[key] != null ? source[key] : add[key];
+			}
+		}
+		
+		protected function unmergeDictionary(source:Dictionary, add:Dictionary):void
+		{
+			for(var key:* in add) delete source[key];
+		}
+		
+		
+		public function get parent() : Injector
+		{
+			return m_parent;
+		}
+		
+		public function set parent(value : Injector) : void
+		{
+			if (m_parent) unmergeInjector(parent);
+			m_parent = value;
+			if (m_parent) mergeInjector(parent);
 		}
 	}
 }

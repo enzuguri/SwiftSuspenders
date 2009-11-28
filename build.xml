@@ -1,4 +1,6 @@
-<?xml version="1.0"?>
+
+
+
 <project name="SwiftSuspenders" basedir="." default="test">
 
   <!-- set up a prefix for all environment variables -->
@@ -106,17 +108,21 @@
       <arg value="-headless-server=true" />
 	</java>
     <!-- Execute TestRunner.swf as FlexUnit tests and publish reports -->
-    <flexunit swf="bin/TestRunner.swf" toDir="${report.loc}" haltonfailure="true" verbose="true" localTrusted="true"/>
-    <!-- Generate readable JUnit-style reports -->
-    <junitreport todir="${report.loc}">
-      <fileset dir="${report.loc}">
-        <include name="TEST-*.xml"/>
-      </fileset>
-      <report format="frames" todir="${report.loc}/html"/>
-    </junitreport>
-    <echo>[test] Finished running Unit Tests</echo>
+    <antcall target="launch"></antcall>
   </target>
   
+	<target name="launch">
+		<flexunit swf="bin/TestRunner.swf" toDir="${report.loc}" haltonfailure="true" verbose="true" localTrusted="true"/>
+			<!-- Generate readable JUnit-style reports -->
+		    <junitreport todir="${report.loc}">
+		    	<fileset dir="${report.loc}">
+		        	<include name="TEST-*.xml"/>
+		    	</fileset>
+		      <report format="frames" todir="${report.loc}/html"/>
+		    </junitreport>
+	<echo>[test] Finished running Unit Tests</echo>
+	</target>
+	
   <!-- Build Documentation -->
   <target name="asdoc" depends="test">
     <echo>[create-docs] Generating ASDOC documentation</echo>
